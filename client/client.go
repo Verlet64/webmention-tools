@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"webmention-tools/discovery"
+	"webmention-tools/parse"
 )
 
 type WebmentionClient struct {
@@ -38,7 +38,7 @@ func (wm *WebmentionClient) DiscoverWebmentionEndpointFromURL(url string) (strin
 		return "", errors.New(fmt.Sprintf(WebmentionClientFailedFetchDiscoveryDocument+"[Status %v]", res.StatusCode))
 	}
 
-	endpoint, err := discovery.ParseWebmentionURLFromHTML(res.Body)
+	endpoint, err := parse.ParseWebmentionURLFromHTML(res.Body)
 	if err != nil {
 		return "", err
 	}

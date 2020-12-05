@@ -1,4 +1,4 @@
-package discovery_test
+package parse_test
 
 import (
 	"bufio"
@@ -6,7 +6,7 @@ import (
 	"html/template"
 	"strings"
 	"testing"
-	"webmention-tools/discovery"
+	"webmention-tools/parse"
 )
 
 const (
@@ -55,7 +55,7 @@ func TestParseWebmentionURLFromHTML(t *testing.T) {
 
 		html := string(b.Bytes())
 
-		got, err := discovery.ParseWebmentionURLFromHTML(&b)
+		got, err := parse.ParseWebmentionURLFromHTML(&b)
 		if got != testCase.ParsedURL || err != testCase.ParseError {
 			t.Fatalf(`
 Failed Scenario %v
@@ -75,12 +75,12 @@ func TestParseWebmentionURLFromHTML_InvalidHTMLContent(t *testing.T) {
 		t.Fatalf("Failed to construct test input")
 	}
 
-	got, err := discovery.ParseWebmentionURLFromHTML(&b)
+	got, err := parse.ParseWebmentionURLFromHTML(&b)
 	if got != "" {
 		t.Fatalf("Parsed URL from invalid HTML")
 	}
 
-	if err != nil && !strings.HasPrefix(err.Error(), discovery.HTMLParseFailurePrefix) {
-		t.Fatalf("Expected error to start with %v, found %v", discovery.HTMLParseFailurePrefix, err)
+	if err != nil && !strings.HasPrefix(err.Error(), parse.HTMLParseFailurePrefix) {
+		t.Fatalf("Expected error to start with %v, found %v", parse.HTMLParseFailurePrefix, err)
 	}
 }

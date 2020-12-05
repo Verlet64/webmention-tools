@@ -1,7 +1,6 @@
-package discovery
+package parse
 
 import (
-	"fmt"
 	"io"
 	"net/url"
 
@@ -16,10 +15,7 @@ const (
 )
 
 func ParseWebmentionURLFromHTML(r io.Reader) (string, error) {
-	// html, _ := ioutil.ReadAll(r)
 	doc, err := goquery.NewDocumentFromReader(r)
-	html, _ := goquery.OuterHtml(doc.Contents())
-	fmt.Printf("Expected: %v", string(html))
 	if err != nil {
 		return "", errors.Wrap(err, HTMLParseFailurePrefix)
 	}
