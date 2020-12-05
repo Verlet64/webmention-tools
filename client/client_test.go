@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"testing"
 	"webmention-tools/client"
 )
@@ -26,6 +27,73 @@ const (
 </html>
 `
 )
+
+func TestWebmentionClient_SendWebmentionSendsValidWebmentionPayload(t *testing.T) {
+	source := "http://test.example.com/src"
+	dest := "http://test.example.com/dest"
+
+	srv := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		if request.Method != http.MethodPost {
+			t.Fatalf("Expected a POST request, got %v", request.Method)
+		}
+
+		if request.Proto != "HTTP/1.1" {
+			t.Fatalf("Expected a HTTP/1.1 request")
+		}
+
+		if request.Header.Get("Content-Type") != "application/x-www-form-urlencoded" {
+			t.Fatalf("Unexpected content type %v", request.Header.Get("Content-Type"))
+		}
+
+		expectedPayload := url.Values{}
+		expectedPayload.Add("source", source)
+		expectedPayload.Add("target", dest)
+
+		writer.WriteHeader(http.StatusOK)
+	}))
+	defer srv.Close()
+
+	wm := client.NewWebmentionClient()
+	err := wm.SendWebmention(srv.URL, source, dest)
+	if err != nil {
+		t.Fatalf("Encountered error sending webmention: %v", err)
+	}
+}
+
+func TestWebmentionClient_SendWebmentionErrorsOnNon2xx(t *testing.T) {
+	source := "http://test.example.com/src"
+	dest := "http://test.example.com/dest"
+
+	var status int
+
+	srv := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		writer.WriteHeader(status)
+	}))
+	defer srv.Close()
+
+	testCases := []struct {
+		responseCode int
+		errorPrefix  string
+	}{
+		{http.StatusPermanentRedirect, client.WebmentionSendFailure},
+		{http.StatusInternalServerError, client.WebmentionSendFailure},
+		{http.StatusForbidden, client.WebmentionSendFailure},
+	}
+
+	for _, tcs := range testCases {
+		status = tcs.responseCode
+		wm := client.NewWebmentionClient()
+		err := wm.SendWebmention(srv.URL, source, dest)
+		if err == nil {
+			t.Fatalf("Expected an error from SendWebmention")
+		}
+
+		if err.Error() != fmt.Sprintf("%v [Status=%v]", client.WebmentionSendFailure, status) {
+			t.Fatalf("Encountered error sending webmention: %v", err)
+		}
+	}
+
+}
 
 func TestWebmentionClient_DiscoverWebmentionEndpointFromHTMLReturnsWebmentionURL(t *testing.T) {
 	var html []byte

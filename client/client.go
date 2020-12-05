@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"webmention-tools/parse"
+	"webmention-tools/webmention"
 )
 
 type WebmentionClient struct {
@@ -12,7 +13,8 @@ type WebmentionClient struct {
 }
 
 const (
-	WebmentionClientFailedFetchDiscoveryDocument = "Failed to fetch discovery document"
+	WebmentionClientFailedFetchDiscoveryDocument = "Failed to fetch parse document"
+	WebmentionSendFailure                        = "Failed to dispatch webmention"
 )
 
 func NewWebmentionClient() *WebmentionClient {
@@ -44,4 +46,23 @@ func (wm *WebmentionClient) DiscoverWebmentionEndpointFromURL(url string) (strin
 	}
 
 	return endpoint, nil
+}
+
+func (wm *WebmentionClient) SendWebmention(url string, source string, target string) error {
+	mention := webmention.Webmention{Dest: target, Src: source}
+	req, err := mention.ToHTTPRequest(url)
+	if err != nil {
+		return err
+	}
+
+	res, err := wm.client.Do(req)
+	if err != nil {
+		return err
+	}
+
+	if res.StatusCode < 200 || res.StatusCode >= 300 {
+		return errors.New(fmt.Sprintf("%s [Status=%v]", WebmentionSendFailure, res.StatusCode))
+	}
+
+	return nil
 }
