@@ -17,9 +17,9 @@ type Webmention struct {
 }
 
 const (
-	InvalidWebmentionEndpointURLErrorPrefix = "Webmention URL cannot be parsed as url.URL"
-	InvalidSourceEndpointURLErrorPrefix = "Source URL cannot be parsed as url.URL"
-	InvalidDestEndpointURLErrorPrefix = "Destination URL cannot be parsed as url.URL"
+	InvalidWebmentionEndpointURLErrorPrefix = "Webmention URL cannot be parsed"
+	InvalidSourceEndpointURLErrorPrefix = "Source URL cannot be parsed"
+	InvalidDestEndpointURLErrorPrefix = "Destination URL cannot be parsed"
 	HTTPRequestConstructionError = "Failed to construct HTTP Request. Please report this as an issue."
 )
 
