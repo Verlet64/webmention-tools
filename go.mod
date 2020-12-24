@@ -1,4 +1,4 @@
-module webmention-tools
+module github.com/verlet64/webmention-tools
 
 go 1.15
 
